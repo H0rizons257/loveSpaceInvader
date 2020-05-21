@@ -1,5 +1,6 @@
 require("player")
 require("invader")
+require("laser")
 
 SCALE = 0.5
 BGM_VOLUME_HIGH = 0.2
@@ -7,6 +8,7 @@ BGM_VOLUME_LOW = 0.05
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 RELOAD_TIME = 0.7
+
 
 
 function love.load()
@@ -22,13 +24,30 @@ function love.load()
 			enemies[row][column] = createInvader(row, column)
 		end
 	end
+	
+	lasers = {}
 end
 	
 gameOver = false
+reloadCooldown = 1
+allDead = false
+
+function love.keypressed(key)
+	if gameOver == false then
+		if key == "space" then
+			if reloadCooldown > RELOAD_TIME then
+			table.insert(lasers,createLaser())
+			reloadCooldown = 0
+			end
+		end
+	end
+end
 
 function love.update(dt)
 	if gameOver == false then
 	
+		reloadCooldown = reloadCooldown+dt
+		
 		if love.keyboard.isDown("left") then
 			playerShip.move(-dt)
 		elseif love.keyboard.isDown("right") then
@@ -36,18 +55,34 @@ function love.update(dt)
 		end
 		
 		changeDirection = false
+		allDead = true
 		for row=1,#enemies do
 			for column=1,#enemies[row] do
 				if(changeDirection == false) then
 					changeDirection = detectSide(enemies[row][column])
 				end
+				
+				detectLaserCollision(enemies[row][column])
+				
+				if enemies[row][column].alive then
+					allDead = false
+				end
 			end
+		end
+		
+		if allDead then
+			gameOver = true
+		return
 		end
 		
 		for row=1,#enemies do
 			for column=1,#enemies[row] do
 				moveInvader(enemies[row][column], dt)
 			end
+		end
+		
+		for laser=1,#lasers do
+			moveLaser(lasers[laser], dt)
 		end
 	end
 end
@@ -62,8 +97,14 @@ function love.draw()
 	for row=1,#enemies do
         for column=1,#enemies[row] do
 			local invader = enemies[row][column]
-			love.graphics.draw(invader.sprite, invader.x, invader.y, 0, SCALE, SCALE)
+			if invader.alive then
+				love.graphics.draw(invader.sprite, invader.x, invader.y, 0, SCALE, SCALE)
+			end
 		end
 	end
+	
+	for laser=1,#lasers do
+			love.graphics.draw(lasers[laser].sprite, lasers[laser].x, lasers[laser].y, 0, SCALE, SCALE)
+	end	
 end
 
