@@ -9,11 +9,16 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 RELOAD_TIME = 0.7
 
-
+laserSFX = love.audio.newSource("sfx_laser.ogg","static")
+BGM = love.audio.newSource("POL-stealth-mode-short.wav","stream")
 
 function love.load()
 	love.window.setTitle("Space Invader")
 	love.window.setMode(SCREEN_WIDTH, SCREEN_HEIGHT)
+	
+	BGM:setLooping(true)
+	BGM:setVolume(BGM_VOLUME_HIGH)
+	BGM:play()
 	
 	playerShip = createPlayer()
 	
@@ -37,6 +42,8 @@ function love.keypressed(key)
 		if key == "space" then
 			if reloadCooldown > RELOAD_TIME then
 			table.insert(lasers,createLaser())
+			laserSFX:stop()
+			laserSFX:play()
 			reloadCooldown = 0
 			end
 		end
