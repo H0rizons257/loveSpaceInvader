@@ -41,7 +41,6 @@ function detectLaserCollision(invader)
 		then
 			invader.alive = false
 			table.remove(lasers, currentLaser)
-			score = score + 200
 			break
 		end		
 	end
